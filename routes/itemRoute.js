@@ -31,6 +31,6 @@ router.put('/edit/:id',edit_item)
 //delete
 router.delete('/:id',delete_item)
 
-console.log("test1")
+
 
 module.exports = router
