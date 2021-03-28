@@ -34,8 +34,7 @@ const user_regis = async (req,res) =>{
 
 const user_login =  async (req, res, next)=> {
     // Handle success
-        const name = await User.findOne({_id:req.session.passport.user})
-        return res.status(200).json({status:{error:null,message:`Username : ${name.username} has been logged in`}})
+        return res.status(200).json({status:{error:null,message:`Username : ${req.user.username} has been logged in`},user:req.user._id})
   }
 
 const user_failed = (err,req, res, next)=> {
@@ -46,7 +45,7 @@ const user_failed = (err,req, res, next)=> {
 
 const user_order = async (req,res)=>{
     try {
-        const allOrders = req.user.isAdmin ? await Order.find() : await Order.findOne({orderedBy:req.user.username})
+        const allOrders = req.user.isAdmin ? await Order.find() : await Order.find({orderedBy:req.user.username})
         if (!allOrders) return res.json({status:{error:true,message:`Not found any order related account : ${req.user.username}`}})
         res.json(allOrders)
     } catch{
