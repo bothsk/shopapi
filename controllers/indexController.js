@@ -27,9 +27,20 @@ const user_regis = async (req,res) =>{
     
 }
 
-const user_login = async (req,res) => {
+// const user_login = async (req,res) => {
+//         const name = await User.findOne({_id:req.session.passport.user})
+//         res.send(`Hi ${name.username}!`)    
+// }
+
+const user_login =  async (req, res, next)=> {
+    // Handle success
         const name = await User.findOne({_id:req.session.passport.user})
-        res.send(`Hi ${name.username}!`)    
+        return res.status(200).json({status:{error:null,message:`Username : ${name.username} has been logged in`}})
+  }
+
+const user_failed = (err,req, res, next)=> {
+    // Handle error
+     return res.status(401).json({status:{error:true,message:`Incorrect username or password`}})
 }
 
 
@@ -37,7 +48,7 @@ const user_order = async (req,res)=>{
     try {
         const allOrders = req.user.isAdmin ? await Order.find() : await Order.findOne({orderedBy:req.user.username})
         if (!allOrders) return res.json({status:{error:true,message:`Not found any order related account : ${req.user.username}`}})
-        res.send(allOrders)
+        res.json(allOrders)
     } catch{
         return res.json({status:{error:true,message:'DB processing error'}})
     }
@@ -49,5 +60,6 @@ const user_order = async (req,res)=>{
 module.exports = {
     user_login,
     user_regis,
-    user_order
+    user_order,
+    user_failed
 }
