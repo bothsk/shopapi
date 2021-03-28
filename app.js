@@ -6,7 +6,6 @@ const itemRoute = require('./routes/itemRoute')
 
 const mongoose = require('mongoose')
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy
 const MongoStore = require('connect-mongo')
 const session = require('express-session');
 const cookieParser = require('cookie-parser')
@@ -24,13 +23,13 @@ app.use(express.urlencoded({extended:false}))
 app.use(cookieParser())
 app.use(
     session({
-      secret: 'my_super_secret',
+      secret: process.env.passportSecret,
       resave: false,
       saveUninitialized: false,
       store: MongoStore.create({
           mongoUrl:process.env.mongoURL,
         rolling : true,
-        ttl: 1*24*60*60
+        ttl: 1*24*60*60 //1 Day
         })
     }
   ))
