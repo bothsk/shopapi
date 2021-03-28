@@ -141,8 +141,6 @@ const delete_item = async(req,res)=>{
         return res.json({status:{error:true,message:`DB processing error`}})
     }
         
-    
-    
 }
 
 
