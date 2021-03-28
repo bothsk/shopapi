@@ -1,6 +1,6 @@
 const Item = require('../models/item')
 const Order = require('../models/order')
-
+const { isValidObjectId } = require('mongoose')
 
 const all_items = async (req,res) => {
 
@@ -21,13 +21,20 @@ const all_items = async (req,res) => {
 }
 
 const search_item = async(req,res)=>{
-    try {
-        const item = await Item.findOne({_id:req.params.id})
-        if (item) return res.json({status:{error:null},item})
-        res.json({status:{error:true,message:`Not found input item`}})
-    } catch (err) {
-        res.json({status:{error:true,message:`Not found input item`}})
-    }
+    
+        
+        if (!isValidObjectId(req.params.id)) return res.json({status:{error:true,message:`Incorrect input ID type`}})
+
+        try {
+           const item = await Item.findOne({_id:req.params.id})
+           if (!item) return res.json({status:{error:true,message:`Not found input item`}})
+           return res.json({status:{error:null},item})
+        } catch {
+           return res.json({status:{error:true,message:`DB processing error`}})
+        }
+        
+       
+    
 }
 
 const buy_item = async(req,res)=>{
@@ -42,7 +49,7 @@ const buy_item = async(req,res)=>{
            for (item of items){
              if (!item.name||!item.qty) return res.json({status:{error:true,message:`Name and Quantity are required`}})  
              let checkItem = await Item.findOne({name:item.name})
-             ///ถ้าในสั่งซื้อของที่ไม่มีใน DB
+             ///ถ้าในรายการสั่งซื้อมีของที่ไม่มีใน DB
              if (!checkItem) return res.json({status:{error:true,message:`Not found item:${item.name} in DB`}})  
              updateQTY = checkItem.qty - item.qty
              ///ถ้าสั่งของจำนวนมากกว่าที่มีใน DB
@@ -75,26 +82,33 @@ const buy_item = async(req,res)=>{
         return res.json({status:{error:true,message:`DB processing error`}})
     }
     
-     
 }
  
 
 
 const add_item = async(req,res)=>{
-    const existedItem = await Item.findOne({name:req.body.name})
-    if (existedItem) return  res.json({status:{error:true,message:`Item name has already taken`},existedItem})
-    const addItem = await Item.create({
-        name:req.body.name,
-        qty:req.body.qty,
-        price:req.body.price
-    })
-    res.json({status:{error:null,message:`${addItem.name} has been added to the shop`},addItem})
+    try {
+            const existedItem = await Item.findOne({name:req.body.name})
+        if (existedItem) return  res.json({status:{error:true,message:`Item name has already taken`},existedItem})
+        const addItem = await Item.create({
+            name:req.body.name,
+            qty:req.body.qty,
+            price:req.body.price
+        })
+        return res.json({status:{error:null,message:`${addItem.name} has been added to the shop`},addItem})
+    } catch {
+        return res.json({status:{error:true,message:`DB processing error`}})
+    }
+    
 }
 
 const edit_item = async (req,res)=>{
-    try{
+
+    if (!isValidObjectId(req.params.id)) return res.json({status:{error:true,message:`Incorrect input ID type`}})
+    
+    try {
         const item = await Item.findOne({_id:req.params.id})
-        if (!item) res.json({status:{error:true,message:`Can't updated not found input item`}})
+        if (!item) res.json({status:{error:true,message:`Not found item ID:${req.params.id}`}})
 
         if (req.body.name||req.body.qty||req.body.price){
         const update = {
@@ -104,23 +118,30 @@ const edit_item = async (req,res)=>{
         }
         await Item.findOneAndUpdate({_id:req.params.id},update)
         const updatedItem = await Item.findOne({_id:req.params.id})
-        return res.json({status:{error:null,message:`${updatedItem.name} has been updated`},updatedItem})
+        return res.json({status:{error:null,message:`${updatedItem.name} has been updated`},item,updatedItem})
+        }
+        return res.json({status:{error:true,message:`Not found any information to update`}})
+    } catch {
+        return res.json({status:{error:true,message:`DB processing error`}})
     }
-     return res.json({status:{error:true,message:`Not found update input`}})
+        
 
-    } catch (err){
-       return res.json({status:{error:true,message:`Can't updated not found input item`}})
-    }
+    
 }
 
 const delete_item = async(req,res)=>{
+    
+    if (!isValidObjectId(req.params.id)) return res.json({status:{error:true,message:`Incorrect input ID type`}})
+
     try {
         const deleteItem = await Item.findOneAndDelete({_id:req.params.id})
         if (!deleteItem) return res.json({status:{error:true,message:`Can't deleted not found input item`}})
         return res.json({status:{error:true,message:`Item has been deleted`},deleteItem})
-    } catch (err){
-        return res.json({status:{error:true,message:`Can't deleted not found input item`}})
+    } catch {
+        return res.json({status:{error:true,message:`DB processing error`}})
     }
+        
+    
     
 }
 

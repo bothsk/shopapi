@@ -29,7 +29,7 @@ router.post('/add',itemRequired,add_item)
 router.put('/edit/:id',edit_item)
 
 //delete
-router.delete('/:id',delete_item)
+router.delete('/del/:id',delete_item)
 
 
 

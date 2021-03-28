@@ -21,7 +21,7 @@ const user_regis = async (req,res) =>{
         }  return res.json({status:{error:true,message:'Please input username and password'}})
     } catch (err) {
         
-        return res.json({status:{error:true,message:'processing error'},err:err.message})
+        return res.json({status:{error:true,message:'DB processing error'},err:err.message})
     }
     
     
