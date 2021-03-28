@@ -86,7 +86,7 @@ const buy_item = async(req,res)=>{
  
 
 
-const add_item = async(req,res)=>{
+const create_item = async(req,res)=>{
     try {
             const existedItem = await Item.findOne({name:req.body.name})
         if (existedItem) return  res.json({status:{error:true,message:`Item name has already taken`},existedItem})
@@ -158,7 +158,7 @@ module.exports = {
     all_items,
     search_item,
     buy_item,
-    add_item,
+    create_item,
     edit_item,
     delete_item,
     itemRequired
