@@ -14,8 +14,8 @@ const all_items = async (req,res) => {
 
         }
         res.json(allItem)
-    } catch {
-        return res.json({status:{error:true,message:`DB processing error`}})
+    } catch (err) {
+        return res.json({status:{error:true,message:`DB processing error`},detail:err.message})
     }
     
 }
@@ -29,8 +29,8 @@ const search_item = async(req,res)=>{
            const item = await Item.findOne({_id:req.params.id})
            if (!item) return res.json({status:{error:true,message:`Not found input item`}})
            return res.json({status:{error:null},item})
-        } catch {
-           return res.json({status:{error:true,message:`DB processing error`}})
+        } catch (err) {
+            return res.json({status:{error:true,message:`DB processing error`},detail:err.message})
         }
         
        
@@ -47,7 +47,7 @@ const buy_item = async(req,res)=>{
            let updateDetails = []
            ///เช็คว่าทุกตัวที่กรอกมาว่ามีอยู่ใน DB
            for (item of items){
-             if (!item.name||!item.qty) return res.json({status:{error:true,message:`Name and Quantity are required`}})  
+             if (!item.name||!item.qty||item.qty%1!==0) return res.json({status:{error:true,message:`Name and Quantity are required`}})  
              let checkItem = await Item.findOne({name:item.name})
              ///ถ้าในรายการสั่งซื้อมีของที่ไม่มีใน DB
              if (!checkItem) return res.json({status:{error:true,message:`Not found item:${item.name} in DB`}})  
@@ -79,7 +79,7 @@ const buy_item = async(req,res)=>{
         return  res.json({status:{error:true,message:`Please send request with array of items!`}})
 
     } catch (err) {
-        return res.json({status:{error:true,message:`DB processing error`}})
+        return res.json({status:{error:true,message:`DB processing error`},detail:err.message})
     }
     
 }
@@ -90,14 +90,15 @@ const create_item = async(req,res)=>{
     try {
             const existedItem = await Item.findOne({name:req.body.name})
         if (existedItem) return  res.json({status:{error:true,message:`Item name has already taken`},existedItem})
+
         const addItem = await Item.create({
             name:req.body.name,
             qty:req.body.qty,
             price:req.body.price
         })
         return res.json({status:{error:null,message:`${addItem.name} has been added to the shop`},addItem})
-    } catch {
-        return res.json({status:{error:true,message:`DB processing error`}})
+    } catch (err) {
+        return res.json({status:{error:true,message:`DB processing error`},detail:err.message})
     }
     
 }
@@ -111,6 +112,7 @@ const edit_item = async (req,res)=>{
         if (!item) res.json({status:{error:true,message:`Not found item ID:${req.params.id}`}})
 
         if (req.body.name||req.body.qty||req.body.price){
+        if (req.body.qty%1!==0) return res.json({status:{error:true,message:`Quantity should be integer type`}})
         const update = {
             name:req.body.name ? req.body.name : item.name,
             qty:req.body.qty ? req.body.qty : item.qty,
@@ -121,8 +123,8 @@ const edit_item = async (req,res)=>{
         return res.json({status:{error:null,message:`${updatedItem.name} has been updated`},item,updatedItem})
         }
         return res.json({status:{error:true,message:`Not found any information to update`}})
-    } catch {
-        return res.json({status:{error:true,message:`DB processing error`}})
+    } catch (err) {
+        return res.json({status:{error:true,message:`DB processing error`},detail:err.message})
     }
         
 
@@ -137,16 +139,15 @@ const delete_item = async(req,res)=>{
         const deleteItem = await Item.findOneAndDelete({_id:req.params.id})
         if (!deleteItem) return res.json({status:{error:true,message:`Can't deleted not found input item`}})
         return res.json({status:{error:true,message:`Item has been deleted`},deleteItem})
-    } catch {
-        return res.json({status:{error:true,message:`DB processing error`}})
-    }
-        
+    } catch (err) {
+        return res.json({status:{error:true,message:`DB processing error`},detail:err.message})
+    } 
 }
 
 
 
 function itemRequired(req,res,next){
-    if (req.body.name&&req.body.qty&&req.body.price){
+    if (req.body.name&&req.body.qty%1===0&&req.body.price){
         return next()
     }
     return res.json({status:{error:true,message:'missing item requirement'}})
