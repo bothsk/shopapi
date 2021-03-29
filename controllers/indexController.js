@@ -27,10 +27,7 @@ const user_regis = async (req,res) =>{
     
 }
 
-// const user_login = async (req,res) => {
-//         const name = await User.findOne({_id:req.session.passport.user})
-//         res.send(`Hi ${name.username}!`)    
-// }
+
 
 const user_login =  async (req, res, next)=> {
     // Handle success
@@ -42,6 +39,11 @@ const user_failed = (err,req, res, next)=> {
      return res.status(401).json({status:{error:true,message:`Incorrect username or password`}})
 }
 
+
+const user_logout = (req,res)=>{
+    req.logOut()
+    res.json({status:{error:null,message:'Successfully logout'}})
+}
 
 const user_order = async (req,res)=>{
     try {
@@ -60,5 +62,6 @@ module.exports = {
     user_login,
     user_regis,
     user_order,
-    user_failed
+    user_failed,
+    user_logout
 }

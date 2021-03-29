@@ -146,8 +146,9 @@ const delete_item = async(req,res)=>{
 
 
 
-function itemRequired(req,res,next){
-    if (req.body.name&&req.body.qty%1===0&&req.body.price){
+const itemRequired = (req,res,next)=>{
+    if (req.body.name&&req.body.qty&&req.body.price){
+        if(req.body.qty%1!==0) return res.json({status:{error:true,message:'Quantity should be integer type'}})
         return next()
     }
     return res.json({status:{error:true,message:'missing item requirement'}})
