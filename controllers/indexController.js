@@ -3,6 +3,7 @@ const Order = require('../models/order')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const validator = require('email-validator')
+const {send_email} = require('../nodemailer')
 
 const user_regis = async (req,res) =>{
     const {username,password,email,isAdmin} = req.body
@@ -93,7 +94,12 @@ const user_forget = async (req,res)=>{
     if (!checkEmail) return res.json({status:{error:true,message:'Not found user related to this email'}})
     
     const token = jwt.sign({user:checkEmail.username},process.env.jwtSecret+checkEmail.password,({expiresIn:'5m'}))
-    res.send(`http://localhost:3000/reset/${checkEmail.username}/${token}`)
+    
+    const sended = send_email(checkEmail.email,checkEmail.username,`http://localhost:3000/reset/${checkEmail.username}/${token}`)
+    if (!sended) return res.json({status:{error:true,message:`Can't send email to your address`}})
+    
+    return res.json({status:{error:null,message:`An email has been send to your email`}})
+
     } catch (err) {
         
     return res.json({status:{error:true,message:'DB processing error'},err:err.message})
@@ -112,7 +118,7 @@ const user_reset = async (req,res)=>{
         let checkedToken
         try {
             checkedToken = jwt.verify(token,process.env.jwtSecret+checkedUser.password)
-        } catch {
+        } catch (err){
         return res.json({status:{error:true,message:`Invalid token or token was expired`}})
         }
         if (!password)  return res.json({status:{error:true,message:`Please input new password`}})

@@ -15,7 +15,6 @@ mongoose.connect(process.env.mongoURL,({useNewUrlParser : true,useUnifiedTopolog
     console.log('Database connected')
 })
 
-  
 
 app.use(express.json())
 app.use(express.urlencoded({extended:false}))
